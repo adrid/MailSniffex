@@ -1,0 +1,23 @@
+@import "../node_modules/bulmaswatch/superhero/variables";
+@import "../node_modules/bulma/bulma.sass";
+@import "../node_modules/bulmaswatch/superhero/overrides";
+
+dt {
+  float:left;
+  width: 160px;
+  text-align: right;
+  clear: left;
+  padding-bottom: 10px;
+  padding-right: 20px;
+}
+dd {
+  padding-bottom: 5px;
+}
+
+.unread {
+  background-color: $primary;
+}
+
+.unread-column {
+  width: 1px;
+}

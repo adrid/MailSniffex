@@ -1,0 +1,27 @@
+To: you3@example.com
+Date: Fri, 22 Jan 2021 01:16:08 +0100
+Content-Type: multipart/mixed; boundary=w2eejg5J
+Return-Path: <hello2@example.com>
+From: hello2@example.com
+Subject: Plain text mail with 2 attachments
+Message-ID: <7a904151da12b42761014d5f16adbf3a@example.com>
+MIME-Version: 1.0
+
+--w2eejg5J
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+Some plain text
+--w2eejg5J
+Content-Type: text/plain; name=file1.txt
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; name=file1.txt; filename=file1.txt
+
+U29tZSB0ZXN0IHRleHQgMQo=
+--w2eejg5J
+Content-Type: text/plain; name=file2.txt
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; name=file2.txt; filename=file2.txt
+
+U29tZSB0ZXN0IHRleHQgMgo=
+--w2eejg5J--

@@ -1,0 +1,14 @@
+Subject: HTML Mail
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+From: hello@example.com
+Cc: cc@example.com
+X-Priority: 2 (High)
+Message-ID: <c569b0933c393e8e2877120291cbf713@example.com>
+Date: Fri, 22 Jan 2021 01:16:08 +0100
+Content-Type: text/html; charset=utf-8
+Return-Path: <hello@example.com>
+To: you@example.com
+Reply-To: replyTo@example.com
+
+<p>Some text <strong>in paragraph</strong></p>
