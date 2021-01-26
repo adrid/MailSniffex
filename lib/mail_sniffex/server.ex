@@ -129,7 +129,6 @@ defmodule MailSniffex.Server do
 
   def terminate(reason, state) do
     Logger.info("Terminating Session")
-    IO.inspect(reason)
     {:ok, reason, state}
   end
 

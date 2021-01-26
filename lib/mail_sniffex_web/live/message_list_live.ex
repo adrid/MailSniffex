@@ -8,7 +8,6 @@ defmodule MailSniffexWeb.Live.MessageListLive do
   alias Surface.Components.Form.Field
 
   data current_page_count, :integer, default: 0
-  data items_per_page, :integer, default: 10
 
   def mount(_params, _assigns, socket) do
     if connected?(socket) do
@@ -16,13 +15,17 @@ defmodule MailSniffexWeb.Live.MessageListLive do
     end
 
     db = MailSniffex.DB.get_db()
+    items_per_page = 10
+    search_options = %{items_per_page: items_per_page}
 
     {
       :ok,
       socket
-      |> assign(:messages, MailSniffex.DB.get_messages())
+      |> assign(:items_per_page, items_per_page)
+      |> assign(:messages, MailSniffex.DB.get_messages(search_options))
       |> assign(:count, CubDB.size(db))
-      |> assign(:search, %{text: ""})
+      |> assign(:search_form, %{text: ""})
+      |> assign(:search_options, search_options)
       |> assign(:current_size, MailSniffex.SizeWatcher.get_current_size())
     }
   end
@@ -30,13 +33,24 @@ defmodule MailSniffexWeb.Live.MessageListLive do
   def render(assigns) do
     ~H"""
     <div id="message-list-view">
-      <Form for={{ :search }} change="change" opts={{ autocomplete: "off" }}>
-        <Field name="text">
-          <div class="control">
-            <TextInput opts={{placeholder: "Search...", "phx-debounce": "500"}} class="input is-primary" value={{ @search.text }} />
-          </div>
-        </Field>
-      </Form>
+      <div class="is-flex">
+        <div class="is-flex-grow-1">
+        <Form for={{ :search_form }} change="change" opts={{ autocomplete: "off" }}>
+          <Field name="text">
+            <div class="control">
+              <TextInput opts={{placeholder: "Search...", "phx-debounce": "500"}} class="input is-primary" value={{ @search_form.text }} />
+            </div>
+          </Field>
+        </Form>
+        </div>
+        <div>
+          <Pagination
+            current_page={{@current_page_count}}
+            last_item={{List.last(@messages)}}
+            search_options={{assigns.search_options}}
+          />
+        </div>
+      </div>
       <table class="table is-stripped is-fullwidth is-hoverable">
         <thead>
           <tr>
@@ -60,6 +74,7 @@ defmodule MailSniffexWeb.Live.MessageListLive do
       <Pagination
         current_page={{@current_page_count}}
         last_item={{List.last(@messages)}}
+        search_options={{assigns.search_options}}
       />
     </div>
     """
@@ -76,7 +91,7 @@ defmodule MailSniffexWeb.Live.MessageListLive do
   def handle_info(
         {:message_created, message},
         %{
-          assigns: %{current_page_count: page, search: %{text: search_text}}
+          assigns: %{current_page_count: page, search_form: %{text: search_text}}
         } = socket
       )
       when page <= 0 and search_text === "" do
@@ -115,12 +130,15 @@ defmodule MailSniffexWeb.Live.MessageListLive do
      )}
   end
 
-  def handle_event("change", %{"search" => %{"text" => text}}, socket) do
+  def handle_event("change", %{"search_form" => %{"text" => text}}, socket) do
+    search_options = %{select: [min_key: nil, reverse: true], search_text: text, items_per_page: socket.assigns.items_per_page}
     {:noreply,
      socket
      |> assign(:current_page_count, 0)
-     |> assign(:messages, MailSniffex.DB.get_messages([min_key: nil, reverse: true], text))
-     |> assign(:search, %{text: text})}
+     |> assign(:search_form, %{text: text})
+     |> assign(:search_options, search_options)
+     |> assign(:messages, MailSniffex.DB.get_messages(search_options))
+    }
   end
 
   def handle_event("previous_page", _, socket) do
@@ -128,12 +146,14 @@ defmodule MailSniffexWeb.Live.MessageListLive do
       {key, _} -> key
       nil -> nil
     end
+    search_options = %{select: [min_key: first_item_key, reverse: false], search_text: socket.assigns.search_form.text, items_per_page: socket.assigns.items_per_page}
     {:noreply,
      socket
      |> update(:current_page_count, &(&1 - socket.assigns.items_per_page))
+     |> assign(:search_options, search_options)
      |> assign(
        :messages,
-       MailSniffex.DB.get_messages([min_key: first_item_key, reverse: false], socket.assigns.search.text) |> Enum.reverse()
+       MailSniffex.DB.get_messages(search_options) |> Enum.reverse()
      )}
 
   end
@@ -144,12 +164,14 @@ defmodule MailSniffexWeb.Live.MessageListLive do
       nil -> nil
     end
 
+    search_options = %{select: [max_key: last_item_key, reverse: true], search_text: socket.assigns.search_form.text, items_per_page: socket.assigns.items_per_page}
+
     {:noreply,
      socket
      |> update(:current_page_count, &(&1 + socket.assigns.items_per_page))
      |> assign(
        :messages,
-       MailSniffex.DB.get_messages([max_key: last_item_key, reverse: true], socket.assigns.search.text)
+       MailSniffex.DB.get_messages(search_options)
      )}
   end
 

@@ -32,7 +32,7 @@ defmodule MailSniffexWeb.Live.Header do
               <a :if={{env === :dev}} class="button" href="#" :on-click="send_test_btn_click">Send test</a>
             </div>
             <div class="column has-text-centered">
-              <div class="tags has-addons is-justify-content-center">
+              <div class="tags has-addons is-inline-block">
                 <span class="tag is-dark is-large">
                   {{Float.to_string(@current_size |> bytes_to_meagabytes(), decimals: 2)}} MB
                 </span>
@@ -40,9 +40,9 @@ defmodule MailSniffexWeb.Live.Header do
                   {{Float.to_string(limit |> bytes_to_meagabytes(), decimals: 2)}} MB
                 </span>
               </div>
+              <a href="#" class="button is-inline-block" :on-click="clear_btn_click">Clear inbox</a>
             </div>
             <div class="column has-text-right">
-              <a href="#" class="button" :on-click="clear_btn_click">Clear inbox</a>
             </div>
           </div>
         </div>

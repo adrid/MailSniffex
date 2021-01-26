@@ -3,6 +3,7 @@ defmodule MailSniffexWeb.Live.Pagination do
 
   prop last_item, :any, required: true
   prop current_page, :integer, required: false, default: 1
+  prop search_options, :map, required: true
 
   def render(assigns) do
     ~H"""
@@ -26,8 +27,9 @@ defmodule MailSniffexWeb.Live.Pagination do
     """
   end
 
-  def next_button(%{last_item: {key, _}} = assigns) do
-    if MailSniffex.DB.get_messages([max_key: key, reverse: true]) |> length() > 1 do
+  def next_button(%{last_item: {key, _}, search_options: search_options} = assigns) do
+    search_options = Map.merge(search_options, %{select: [max_key: key, reverse: false], items_per_page: 1})
+    if MailSniffex.DB.get_messages(search_options) |> length() === 1 do
       ~H"""
         <a phx-click="next_page" class="pagination-next">Next</a>
       """

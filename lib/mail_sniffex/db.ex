@@ -55,30 +55,36 @@ defmodule MailSniffex.DB do
     {:reply, db, state}
   end
 
-  def get_messages(page \\ [min_key: nil, reverse: true], search_text \\ "", items_per_page \\ 10) do
-    options = [
+  def get_messages(options) do
+    defaults = %{
+      select: [min_key: nil, reverse: true],
+      search_text: "",
+      items_per_page: 10
+    }
+    options = Map.merge(defaults, options)
+
+    select_options = [
       max_key_inclusive: false,
       min_key_inclusive: false,
       pipe: [
         filter: fn {_key, el} ->
-          if search_text === "" do
+          if options.search_text === "" do
             true
           else
             el.headers["Subject"]
             |> String.downcase()
-            |> String.contains?(search_text |> String.downcase())
+            |> String.contains?(options.search_text |> String.downcase())
           end
         end,
-        take: items_per_page
+        take: options.items_per_page
       ],
-    ] ++ page
-
+    ] |> Keyword.merge(options.select)
 
     db = MailSniffex.DB.get_db()
 
     {:ok, messages} =
       db
-      |> CubDB.select(options)
+      |> CubDB.select(select_options)
 
     messages
   end
