@@ -67,6 +67,26 @@ jobs:
     - name: Set up Docker Buildx
       id: buildx
       uses: docker/setup-buildx-action@v1
+    
+    - name: Prepare
+      id: prep
+      run: |
+        DOCKER_IMAGE=adrid/mailsniffex
+        VERSION=edge
+        if [[ $GITHUB_REF == refs/tags/* ]]; then
+          VERSION=${GITHUB_REF#refs/tags/}
+        elif [[ $GITHUB_REF == refs/heads/* ]]; then
+          VERSION=$(echo ${GITHUB_REF#refs/heads/} | sed -r 's#/+#-#g')
+        elif [[ $GITHUB_REF == refs/pull/* ]]; then
+          VERSION=pr-${{ github.event.number }}
+        fi
+        TAGS="${DOCKER_IMAGE}:${VERSION},${DOCKER_IMAGE}:latest"
+        if [ "${{ github.event_name }}" = "push" ]; then
+          TAGS="$TAGS,${DOCKER_IMAGE}:sha-${GITHUB_SHA::8}"
+        fi
+        echo ::set-output name=version::${VERSION}
+        echo ::set-output name=tags::${TAGS}
+        echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 
     - name: Build and push
       id: docker_build
@@ -75,7 +95,9 @@ jobs:
         context: ./
         file: ./Dockerfile
         push: true
-        tags: adrid/mailsniffex:latest
+        build-args: |
+          APP_VSN=${{ steps.prep.outputs.version }}
+        tags: ${{ steps.prep.outputs.tags }}
 
     - name: Image digest
       run: echo ${{ steps.docker_build.outputs.digest }}
