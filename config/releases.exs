@@ -9,6 +9,11 @@ config :mail_sniffex,
   size_limit: System.get_env("SIZE_LIMIT") || "1GB"
 
 config :mail_sniffex, MailSniffexWeb.Endpoint,
+  url: [
+    host: System.get_env("HOST_URL") || "localhost",
+    port: System.get_env("HOST_PORT") || System.get_env("PORT") || "4000",
+    scheme: System.get_env("HOST_SCHEME") || "http"
+  ],
   http: [
     port: String.to_integer(System.get_env("PORT") || "4000"),
     transport_options: [socket_opts: [:inet6]]

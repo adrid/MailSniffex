@@ -71,7 +71,7 @@ defmodule MailSniffex.DB do
           if options.search_text === "" do
             true
           else
-            el.headers["Subject"]
+            el.headers["Subject"] <> el.headers["From"] <> el.headers["To"]
             |> String.downcase()
             |> String.contains?(options.search_text |> String.downcase())
           end

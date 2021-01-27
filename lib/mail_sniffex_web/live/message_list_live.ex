@@ -35,7 +35,7 @@ defmodule MailSniffexWeb.Live.MessageListLive do
     <div id="message-list-view">
       <div class="is-flex">
         <div class="is-flex-grow-1">
-        <Form for={{ :search_form }} change="change" opts={{ autocomplete: "off" }}>
+        <Form for={{ :search_form }} change="change" submit="change" opts={{ autocomplete: "off" }}>
           <Field name="text">
             <div class="control">
               <TextInput opts={{placeholder: "Search...", "phx-debounce": "500"}} class="input is-primary" value={{ @search_form.text }} />

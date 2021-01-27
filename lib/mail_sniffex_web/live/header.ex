@@ -1,6 +1,7 @@
 defmodule MailSniffexWeb.Live.Header do
   use Surface.LiveView
   alias Surface.Components.LiveRedirect
+  alias MailSniffexWeb.Live.ConfirmModal
 
   @env Application.compile_env(:mail_sniffex, :environment)
 
@@ -24,7 +25,7 @@ defmodule MailSniffexWeb.Live.Header do
     limit = MailSniffex.SizeWatcher.get_size_limit()
     env = @env
     ~H"""
-      <header phx-hook="Header" class="header">
+      <header phx-hook="Header" class="header" id="header">
         <div class="content">
           <div class="columns">
             <div class="column">
@@ -43,10 +44,19 @@ defmodule MailSniffexWeb.Live.Header do
               <a href="#" class="button is-inline-block" :on-click="clear_btn_click">Clear inbox</a>
             </div>
             <div class="column has-text-right">
+              <a href="https://github.com/adrid/MailSniffex" target="_blank" class="button is-text">
+                <span class="icon">
+                  <img src="/images/github.png">
+                </span>
+                <span>GitHub</span>
+              </a>
             </div>
           </div>
         </div>
       </header>
+      <ConfirmModal id="clear-confirm" title="Confirm action" confirmEvent="clear_mails">
+        Do you really want to delete all mails?
+      </ConfirmModal>
     """
   end
 
@@ -55,9 +65,15 @@ defmodule MailSniffexWeb.Live.Header do
   end
 
   def handle_event("clear_btn_click", _, socket) do
+    ConfirmModal.show("clear-confirm")
+    {:noreply, socket}
+  end
+
+  def handle_event("clear_mails", _, socket) do
     MailSniffex.DB.clean_db()
     MailSniffex.SizeWatcher.request_current_size()
     Phoenix.PubSub.broadcast(MailSniffex.PubSub, "messages", {:messages_cleared})
+    ConfirmModal.hide("clear-confirm")
     {:noreply, socket}
   end
 
